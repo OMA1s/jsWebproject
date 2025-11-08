@@ -10,9 +10,25 @@ if (!cart){
         quantity: 1
     }
 ];
-
 }
 
+export function updateQuantity(productId, quantity){
+    let match;
+    cart.forEach(item =>{
+        if(item.productId == productId)
+            match = item;
+    });
+    if(match)
+        match.quantity = quantity;
+}
+
+export function getCartQuantity(){
+    let cartQuantity = 0;
+    cart.forEach(item => {
+        cartQuantity += item.quantity;
+    });
+    return cartQuantity;
+}
 function saveToStorage(){
     localStorage.setItem('cart', JSON.stringify(cart));
 }
