@@ -1,8 +1,13 @@
 //import {cart, addToCart, getCartQuantity} from '../data/cart.js';
-import {products, loadProducts} from '../data/products.js'
+import {products, loadProducts, loadProductsFetch} from '../data/products.js'
 import { cart } from '../data/cart-class.js';
 
-loadProducts(renderProductsGrid);
+async function loadPage(){
+    await loadProductsFetch();
+    renderProductsGrid();
+};
+loadPage();
+//loadProducts(renderProductsGrid);
 
 function renderProductsGrid(){
   let productsHtml = '';
@@ -38,7 +43,7 @@ function renderProductsGrid(){
             </div>
 
             <div class="product-quantity-container">
-              <select>
+              <select class="js-product-quantity">
                 <option selected value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -72,8 +77,17 @@ function renderProductsGrid(){
   document.querySelectorAll('.js-add-to-cart').forEach((button) => {
       button.addEventListener('click', () => {
           const productId = button.dataset.productId;
+          const container = button.parentElement;
+          const quantity = parseInt(container.querySelector('.js-product-quantity').value);
+          if (quantity){
+            for(let i = 0; i < quantity; i++){
+              cart.addToCart(productId);
+            }
+          }
+          else{
+            cart.addToCart(productId);
+          }
           
-          cart.addToCart(productId);
           updateCartQuantity();
       });
   });
