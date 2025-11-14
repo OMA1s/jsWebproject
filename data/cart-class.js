@@ -82,7 +82,7 @@ class Cart{
                 }
             });
             if(id >= 0){
-                cart.splice(id, 1);
+                this.cartItems.splice(id, 1);
             }
             this.saveToStorage();
         };
@@ -92,9 +92,4 @@ class Cart{
         };
 }
 
-const cart = new Cart('cart-oop');
-const businessCart = new Cart('cart-business');
-
-
-console.log(cart);
-console.log(businessCart);
+export const cart = new Cart('cart-oop');
