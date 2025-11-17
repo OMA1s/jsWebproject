@@ -1,19 +1,64 @@
 import { formatCurrency } from "../scripts/utils/money.js";
-import { getProduct } from "./products.js";
+import { getProduct, products, loadProductsFetch } from "./products.js";
+import { cart } from '../data/cart-class.js';
 
 export const orders = JSON.parse(localStorage.getItem('orders')) || [];
-console.log(orders);
 
+async function loadPage(){
+    try{
+        await loadProductsFetch();
+        renderOrder();
+    }
+    catch (error) {
+        console.log('Error: ' + error + '. Try again!');
+    }
+    
+}
+loadPage();
 export function addOrder(order){
     orders.unshift(order);
     saveToLocalStorage();
+}
+
+function removeProductFromOrder(orderId, productId){
+    let ord = undefined;
+    let ordIdx = undefined;
+    
+    orders.forEach((o, index) => {
+        if(o.id === orderId){
+            ord = o;
+            ordIdx = index;
+        }
+    });
+    let idx = undefined;
+    let prod = getProduct(productId);
+    ord.products.forEach((p, index) => {
+        if(p.productId === productId){
+            idx = index;
+        }
+    });
+    let prodPrice = prod.priceCents;
+    let prodQuant = undefined;
+    if(idx >= 0){
+        prodQuant = ord.products[idx].quantity;
+        ord.products.splice(idx, 1);
+    }
+    if(ord && prod){
+        if(ord.products.length <= 0){
+            orders.splice(ordIdx, 1);
+        }
+        ord.totalCostCents -= prodPrice * prodQuant;
+    }
+    
+    saveToLocalStorage();
+    renderOrder();
 }
 
 function saveToLocalStorage(){
     localStorage.setItem('orders', JSON.stringify(orders));
 }
 
-function orderDetails(products){
+function orderDetailsHtml(products, orderId){
     let orderDetailsHtml = '';
 
     products.forEach(p =>{
@@ -34,7 +79,7 @@ function orderDetails(products){
               <div class="product-quantity">
                 Quantity: ${p.quantity}
               </div>
-              <button class="cancel-button button-primary js-cancel-button">
+              <button class="cancel-button button-primary js-cancel-button" data-product-id="${product.id}" data-order-id="${orderId}">
                 <img class="cancel-icon" src="images/icons/buy-again.png">
                 <span class="cancel-message">Cancel Product</span>
               </button>
@@ -45,7 +90,7 @@ function orderDetails(products){
     return orderDetailsHtml;
 }
 
-function renderOrderGrid(){
+function orderContainerHtml(){
     let orderGridHtml = '';
 
     orders.forEach(order => {
@@ -69,65 +114,31 @@ function renderOrderGrid(){
               <div>${order.id}</div>
             </div>
           </div>
-
-          <div class="order-details-grid">
-            <div class="product-image-container">
-              <img src="images/products/athletic-cotton-socks-6-pairs.jpg">
-            </div>
-
-            <div class="product-details">
-              <div class="product-name">
-                Black and Gray Athletic Cotton Socks - 6 Pairs
-              </div>
-              <div class="product-delivery-date">
-                Arriving on: August 15
-              </div>
-              <div class="product-quantity">
-                Quantity: 1
-              </div>
-              <button class="buy-again-button button-primary">
-                <img class="buy-again-icon" src="images/icons/buy-again.png">
-                <span class="buy-again-message">Buy it again</span>
-              </button>
-            </div>
-
-            <div class="product-actions">
-              <a href="tracking.html">
-                <button class="track-package-button button-secondary">
-                  Track package
-                </button>
-              </a>
-            </div>
-
-            <div class="product-image-container">
-              <img src="images/products/adults-plain-cotton-tshirt-2-pack-teal.jpg">
-            </div>
-
-            <div class="product-details">
-              <div class="product-name">
-                Adults Plain Cotton T-Shirt - 2 Pack
-              </div>
-              <div class="product-delivery-date">
-                Arriving on: August 19
-              </div>
-              <div class="product-quantity">
-                Quantity: 2
-              </div>
-              <button class="buy-again-button button-primary">
-                <img class="buy-again-icon" src="images/icons/buy-again.png">
-                <span class="buy-again-message">Buy it again</span>
-              </button>
-            </div>
-
-            <div class="product-actions">
-              <a href="tracking.html">
-                <button class="track-package-button button-secondary">
-                  Track package
-                </button>
-              </a>
-            </div>
-          </div>
+          ${orderDetailsHtml(order.products, order.id)}
         </div>
-        `
+        `;
     });
-}
+    return orderGridHtml;
+};
+
+function renderOrder(){
+    
+    if(orders.length <= 0){
+        const orderGrid = document.querySelector('.js-order-grid');
+        if(orderGrid){
+            orderGrid.innerHTML = `<h2>YOU HAVE NO ORDERS PLACED</h2>`;
+        }
+        return;        
+    }
+    document.querySelector('.js-order-grid').innerHTML = orderContainerHtml();
+
+    document.querySelectorAll('.js-cancel-button').forEach(link =>{
+    
+            link.addEventListener('click', () =>{
+                const productId = link.dataset.productId;
+                const orderId = link.dataset.orderId;
+                removeProductFromOrder(orderId, productId);
+            });  
+        });
+    cart.emptyCart();
+};

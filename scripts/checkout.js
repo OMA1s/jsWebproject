@@ -2,7 +2,7 @@ import { renderOrderSummary } from './checkout/orderSummary.js';
 import { renderPaymentSummsary } from './checkout/paymentSummary.js';
 import { loadProducts, loadProductsFetch } from '../data/products.js';
 
-async function loadPage(){
+async function loadCheckoutPage(){
     try{
         await loadProductsFetch();
     }
@@ -12,7 +12,7 @@ async function loadPage(){
     renderOrderSummary();
     renderPaymentSummsary();
 };
-loadPage();
+loadCheckoutPage();
 /*
 loadProductsFetch().then(() =>{
     renderOrderSummary();

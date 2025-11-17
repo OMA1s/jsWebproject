@@ -47,7 +47,7 @@ export function loadProductsFetch(){
       return new product(productDetails);
     });
   }).catch(() =>{
-    console.log('Unexpected Error. Please try again.');
+    console.log('Unexpected Error Loading products from backend. Please try again.');
   });
   
   return promise;

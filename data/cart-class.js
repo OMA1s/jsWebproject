@@ -90,6 +90,11 @@ class Cart{
         saveToStorage(){
             localStorage.setItem(this.#localStorageKey, JSON.stringify(this.cartItems));
         };
+
+        emptyCart(){
+            this.cartItems.splice(0, this.cartItems.length);
+            this.saveToStorage();
+        }
 }
 
 export const cart = new Cart('cart-oop');
